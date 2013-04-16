@@ -2,6 +2,7 @@ require 'mechanize'
 require 'nokogiri'
 require_relative 'scraper'
 require 'sinatra'
+require "sinatra/reloader" if development?
 
 def update
 	agent = Mechanize.new
@@ -22,10 +23,12 @@ def update
 end
 
 def display
-	returns = []
+	returns = ["<a href=\"/update\">update</a><br/>\n"]
 	Scrape.all.each do |m|
 		unless m.block =~ /apartment/i or m.block =~ /condo/i or m.block =~ /gresham/i or m.block =~ /Beaverton/i or m.block =~ /Hillsdale/ or m.block =~ /Gateway/i
-			returns.push m.block
+			ret = m.block.sub /<span class=\"i\"[^>]*>&nbsp;<\/span>/, ""
+
+			returns.push ret + "\n"
 		end
 	end
 	returns
