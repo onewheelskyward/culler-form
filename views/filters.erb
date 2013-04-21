@@ -1,0 +1,24 @@
+<a href="/">display</a> <a href="/update_filters">update filters</a><br/>
+<form method="post">
+  <input type="text" name="pattern" size="40" />
+  <select name="type">
+	<option selected>title</option>
+	<option>detail</option>
+	<option>location</option>
+  </select>
+  <input type="submit" />
+</form>
+<table>
+  <tr>
+	<th>rm</th>
+	<th>pattern</th>
+	<th>type</th>
+  </tr>
+<% filters.each do |filter| %>
+	<tr>
+	  <td><a href="/rm_filter/<%=filter.id%>">x</a></td>
+	  <td><%=filter.pattern%></td>
+	  <td><%=filter.type%></td>
+	</tr>
+<% end %>
+</table>

@@ -1,0 +1,23 @@
+<a href="/update">update</a> <a href="filters">filters</a><br/>
+<table>
+  <tr>
+	<th>Date</th>
+	<th>Title</th>
+	<th>Price</th>
+	<th>ft&sup2;</th>
+	<th>$/ft&sup2;</th>
+	<th>Location</th>
+  </tr>
+<% listings.each do |listing| %>
+	<tr>
+	  <td><%=listing.date%></td>
+	  <td><a href="<%=listing.link_url%>"><%= listing.link_text %></a></td>
+	  <td>$<%=listing.price%></td>
+	  <td><%=listing.sqft%></td>
+	  <td><%= if listing.sqft > 0
+				   "$" + (((listing.price/listing.sqft.to_f) * 100).to_i / 100.to_f).to_s
+	  			end%></td>
+	  <td><%=listing.location%></td>
+	</tr>
+<% end %>
+</table>
