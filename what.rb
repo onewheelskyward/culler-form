@@ -3,12 +3,15 @@ require 'nokogiri'
 require 'sinatra'
 require "sinatra/reloader" if development?
 require 'data_mapper'
-require 'dm-sqlite-adapter'
+#require 'dm-sqlite-adapter'
+require 'dm-postgres-adapter'
 require_relative 'scraper'
+require 'iconv'
 
 DataMapper::Logger.new($stdout, :debug)
 DataMapper::Property::String.length(4000)
-DataMapper.setup(:default, "sqlite://#{File.expand_path(File.dirname(__FILE__))}/houses.sqlite")
+#DataMapper.setup(:default, "sqlite://#{File.expand_path(File.dirname(__FILE__))}/houses.sqlite")
+DataMapper.setup(:default, "postgres://localhost/houses")
 
 class Listing
 	include DataMapper::Resource
@@ -22,6 +25,18 @@ class Listing
 	property :location, String
 	property :display, Boolean, default: true
 	property :created_at, DateTime
+
+	has 1, :detail
+end
+
+class Detail
+	include DataMapper::Resource
+
+	property :id, Serial
+	property :html, Text
+	property :created_at, DateTime
+
+	belongs_to :listing
 end
 
 class Filter
@@ -59,20 +74,25 @@ def disassemble(html)
 	ret
 end
 
+def filter_listing(filter, field, filter_check)
+	if filter_check =~ /#{filter.pattern}/i
+		field.display = false
+		field.save
+	end
+end
+
 def filter
 	filters = Filter.all
 	Listing.all.each do |listing|
 		filters.all.each do |filter|
 			case filter.type
 				when :title
-					if listing.link_text =~ /#{filter.pattern}/i
-						listing.display = false
-						listing.save
-					end
+					filter_listing(filter, listing, listing.link_text)
 				when :location
-					if listing.location =~ /#{filter.pattern}/i
-						listing.display = false
-						listing.save
+					filter_listing(filter, listing, listing.location)
+				when :detail
+					if listing.detail
+						filter_listing(filter, listing, listing.detail.html)
 					end
 			end
 		end
@@ -81,6 +101,8 @@ end
 
 def update
 	agent = Mechanize.new
+	agent.user_agent_alias = 'Linux Firefox'
+
 	page = agent.get('http://portland.craigslist.org/search/apa/mlt?zoomToPosting=&query=&srchType=A&minAsk=&maxAsk=1200&bedrooms=&addTwo=purrr')
 	noko = Nokogiri.HTML(page.body)
 
@@ -94,7 +116,10 @@ def update
 	noko.css('p.srch').each do |m|
 		#puts m.css('span.pl').children.to_s
 		Scrape.first_or_create(block: m.children.to_s)
-		Listing.first_or_create(disassemble(m.children.to_s))
+		listing = Listing.first_or_create(disassemble(m.children.to_s))
+		detail_page = agent.get(listing.link_url)
+		sleep(3)
+		Detail.first_or_create(listing: listing, html: Iconv.conv("UTF8", "LATIN1", detail_page.body))
 	end
 
 	filter
