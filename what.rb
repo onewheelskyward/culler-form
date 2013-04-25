@@ -13,146 +13,38 @@ DataMapper::Property::String.length(4000)
 #DataMapper.setup(:default, "sqlite://#{File.expand_path(File.dirname(__FILE__))}/houses.sqlite")
 DataMapper.setup(:default, "postgres://localhost/houses")
 
-class Listing
-	include DataMapper::Resource
-
-	property :id, Serial
-	property :date, String
-	property :link_url, String
-	property :link_text, String
-	property :price, Integer
-	property :sqft, Integer
-	property :location, String
-	property :display, Boolean, default: true
-	property :created_at, DateTime
-
-	has 1, :detail
-end
-
-class Detail
-	include DataMapper::Resource
-
-	property :id, Serial
-	property :html, Text
-	property :created_at, DateTime
-
-	belongs_to :listing
-end
-
-class Filter
-	include DataMapper::Resource
-
-	property :id, Serial
-	property :pattern, String
-	property :type, Enum[:title, :detail, :location]
-	property :created_id, DateTime
-end
+Dir.glob("models/*.rb").each { |file| require_relative file }
 
 DataMapper.finalize
 DataMapper.auto_upgrade!
 
-# Johnny 5 no disassemble!
-def disassemble(html)
-	ret = {}
-	#'<span class="i">&nbsp;</span> <span class="pl"> <span class="itemdate">Apr 16</span> <a href="http://portland.craigslist.org/mlt/apa/3748006047.html">Bay windows-May move in available</a> </span> <span class="itempnr"> $635 / 1br - 769ft&sup2; -  <span class="itempp"></span> <small> (Portland)</small> </span>  <span class="itempx"> <span class="p"> img&nbsp;<a href="#" class="maptag" data-pid="3748006047">map</a></span></span> <br class="c">'
-	html.match(/\<span class=\"itemdate\"\>(\w+ \d+)\<\/span>/)
-	ret[:date] = $1
+class FartFilter < Sinatra::Base
 
-	html.match(/<a href="([^"]+)">([^>]+)<\/a>/)
-	ret[:link_url] = $1
-	ret[:link_text] = $2
-
-	html.match(/\$(\d+)/)
-	ret[:price] = $1.to_i
-
-	html.match(/(\d+)ft/)
-	ret[:sqft] = $1.to_i
-
-	match = html.match(/\<small>\s*\(([^\)]+)\)\<\/small\>/)
-	ret[:location] = $1
-
-	ret
-end
-
-def filter_listing(filter, field, filter_check)
-	if filter_check =~ /#{filter.pattern}/i
-		field.display = false
-		field.save
-	end
-end
-
-def filter
-	filters = Filter.all
-	Listing.all.each do |listing|
-		filters.all.each do |filter|
-			case filter.type
-				when :title
-					filter_listing(filter, listing, listing.link_text)
-				when :location
-					filter_listing(filter, listing, listing.location)
-				when :detail
-					if listing.detail
-						filter_listing(filter, listing, listing.detail.html)
-					end
-			end
-		end
-	end
-end
-
-def update
-	agent = Mechanize.new
-	agent.user_agent_alias = 'Linux Firefox'
-
-	page = agent.get('http://portland.craigslist.org/search/apa/mlt?zoomToPosting=&query=&srchType=A&minAsk=&maxAsk=1200&bedrooms=&addTwo=purrr')
-	noko = Nokogiri.HTML(page.body)
-
-	puts noko.inspect
-
-	# Not going to worry about what's in the past for now.
-	#noko.css('span.pagelinks a').each do |m|
-	#	puts m.to_s
-	#end
-
-	noko.css('p.srch').each do |m|
-		#puts m.css('span.pl').children.to_s
-		Scrape.first_or_create(block: m.children.to_s)
-		listing = Listing.first_or_create(disassemble(m.children.to_s))
-		detail_page = agent.get(listing.link_url)
-		sleep(3)
-		Detail.first_or_create(listing: listing, html: Iconv.conv("UTF8", "LATIN1", detail_page.body))
+	get '/' do
+		erb :listings, :locals => {listings: display}
 	end
 
-	filter
-end
+	get "/update" do
+		get_update
+		redirect to "/"
+	end
 
-def display
-	Listing.all(display: true, :order => [:created_at.desc])
-end
+	get "/filters" do
+		erb :filters, :locals => {filters: Filter.all}
+	end
 
-get '/' do
-	erb :listings, :locals => {listings: display}
-end
+	post "/filters" do
+		Filter.create(params)
+		redirect to "/filters"
+	end
 
-get "/update" do
-	update
-	redirect to "/"
-end
+	get "/rm_filter/:id" do
+		Filter.get(params[:id].to_i).destroy
+		redirect to "/filters"
+	end
 
-get "/filters" do
-	erb :filters, :locals => {filters: Filter.all}
-end
-
-post "/filters" do
-	Filter.create(params)
-	redirect to "/filters"
-end
-
-get "/rm_filter/:id" do
-	Filter.get(params[:id].to_i).destroy
-	redirect to "/filters"
-end
-
-get "/update_filters" do
-	filter
-	redirect to "/filters"
+	get "/update_filters" do
+		filter
+		redirect to "/filters"
+	end
 end
