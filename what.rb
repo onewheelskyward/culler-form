@@ -7,6 +7,7 @@ require 'data_mapper'
 require 'dm-postgres-adapter'
 require_relative 'scraper'
 require 'iconv'
+require_relative 'helpers'
 
 DataMapper::Logger.new($stdout, :debug)
 DataMapper::Property::String.length(4000)
@@ -21,7 +22,7 @@ DataMapper.auto_upgrade!
 class FartFilter < Sinatra::Base
 
 	get '/' do
-		erb :listings, :locals => {listings: display}
+		erb :listings, :locals => {listings: get_display}
 	end
 
 	get "/update" do
