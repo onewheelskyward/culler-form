@@ -8,7 +8,7 @@ class Listing
 	property :price, Integer
 	property :sqft, Integer
 	property :location, String
-	property :get_display, Boolean, default: true
+	property :display, Boolean, default: true
 	property :created_at, DateTime
 
 	has 1, :detail
