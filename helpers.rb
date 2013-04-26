@@ -77,3 +77,8 @@ def get_display
 	Listing.all(get_display: true, :order => [:created_at.desc])
 end
 
+def get_uri_prefix
+	uri_prefix = request.url
+	uri_prefix.gsub /\/[^\/]+$/, ""
+end
+
