@@ -15,9 +15,14 @@ namespace :fartfilter do
 	task :bundle_install do
 		run "cd /u/apps/#{fetch(:application)}/current ; ~/.rbenv/shims/bundle install ; ~/.rbenv/bin/rbenv rehash"
 	end
+	task :unicorn_restart do
+		run "kill -s USR2 `cat /u/apps/fart-filter/shared/pids/unicorn.pid`"
+	end
 end
 # if you want to clean up old releases on each deploy uncomment this:
 after "deploy:create_symlink", "fartfilter:bundle_install"
+after "deploy:create_symlink", "fartfilter:unicorn_restart"
+
 #after "deploy:restart", "deploy:cleanup"
 
 # if you're still using the script/reaper helper you will need

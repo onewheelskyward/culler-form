@@ -27,7 +27,7 @@ class FartFilter < Sinatra::Base
 
 	get "/update" do
 		get_update
-		redirect to "/"
+		erb :listings, :locals => {uri_prefix: get_uri_prefix, listings: get_display}
 	end
 
 	get "/filters" do
@@ -36,16 +36,16 @@ class FartFilter < Sinatra::Base
 
 	post "/filters" do
 		Filter.create(params)
-		redirect to "/filters"
+		erb :filters, :locals => {uri_prefix: get_uri_prefix, filters: Filter.all}
 	end
 
 	get "/rm_filter/:id" do
 		Filter.get(params[:id].to_i).destroy
-		redirect to "/filters"
+		erb :filters, :locals => {uri_prefix: get_uri_prefix, filters: Filter.all}
 	end
 
 	get "/update_filters" do
 		filter
-		redirect to "/filters"
+		erb :filters, :locals => {uri_prefix: get_uri_prefix, filters: Filter.all}
 	end
 end
