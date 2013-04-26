@@ -31,7 +31,10 @@ class FartFilter < Sinatra::Base
 	end
 
 	get "/filters" do
-		erb :filters, :locals => {filters: Filter.all}
+		uri_prefix = request.url
+		uri_prefix.gsub! /\/[^\/]+$/, ""
+		puts uri_prefix
+		erb :filters, :locals => {uri_prefix: uri_prefix, filters: Filter.all}
 	end
 
 	post "/filters" do

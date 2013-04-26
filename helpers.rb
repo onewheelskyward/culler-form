@@ -22,10 +22,10 @@ def disassemble(html)
 	ret
 end
 
-def filter_listing(filter, field, filter_check)
+def filter_listing(filter, listing, filter_check)
 	if filter_check =~ /#{filter.pattern}/i
-		field.display = false
-		field.save
+		listing.display = false
+		listing.save
 	end
 end
 

@@ -1,5 +1,5 @@
-<a href="/">display</a> <a href="/update_filters">update filters</a><br/>
-<form method="post">
+<a href="<%=uri_prefix%>/">display</a> <a href="<%=uri_prefix%>/update_filters">update filters</a><br/>
+<form method="post" action="<%=uri_prefix%>/filters">
   <input type="text" name="pattern" size="40" />
   <select name="type">
 	<option selected>title</option>
@@ -16,7 +16,7 @@
   </tr>
 <% filters.each do |filter| %>
 	<tr>
-	  <td><a href="/rm_filter/<%=filter.id%>">x</a></td>
+	  <td><a href="<%=uri_prefix%>/rm_filter/<%=filter.id%>">x</a></td>
 	  <td><%=filter.pattern%></td>
 	  <td><%=filter.type%></td>
 	</tr>
