@@ -74,7 +74,7 @@ def get_update
 end
 
 def get_display
-	Listing.all(get_display: true, :order => [:created_at.desc])
+	Listing.all(display: true, :order => [:created_at.desc])
 end
 
 def get_uri_prefix
