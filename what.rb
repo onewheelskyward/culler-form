@@ -22,7 +22,7 @@ DataMapper.auto_upgrade!
 class FartFilter < Sinatra::Base
 
 	get '/' do
-		erb :listings, :locals => {listings: get_display}
+		erb :listings, :locals => {uri_prefix: uri_prefix, listings: get_display}
 	end
 
 	get "/update" do
