@@ -1,10 +1,12 @@
 
 # Johnny 5 no disassemble!
 def disassemble(html)
+# <h4 class="ban">Wed May 01</h4>
 	ret = {}
 	#'<span class="i">&nbsp;</span> <span class="pl"> <span class="itemdate">Apr 16</span> <a href="http://portland.craigslist.org/mlt/apa/3748006047.html">Bay windows-May move in available</a> </span> <span class="itempnr"> $635 / 1br - 769ft&sup2; -  <span class="itempp"></span> <small> (Portland)</small> </span>  <span class="itempx"> <span class="p"> img&nbsp;<a href="#" class="maptag" data-pid="3748006047">map</a></span></span> <br class="c">'
-	html.match(/\<span class=\"itemdate\"\>(\w+ \d+)\<\/span>/)
-	ret[:date] = $1
+	months = {'Jan' => 1, 'Feb' => 2, 'Mar' => 3, 'Apr' => 4, 'May' => 5, 'Jun' => 6, 'Jul' => 7, 'Aug' => 8, 'Sep' => 9, 'Oct' => 10, 'Nov' => 11, 'Dec' => 12}
+	html.match(/\<span class=\"itemdate\"\>(\w+) (\d+)\<\/span>/)
+	ret[:date] = months[$1] + "/" + $2
 
 	html.match(/<a href="([^"]+)">([^>]+)<\/a>/)
 	ret[:link_url] = $1
@@ -32,7 +34,7 @@ end
 def filter
 	filters = Filter.all
 	Listing.all.each do |listing|
-		filters.all.each do |filter|
+		filters.each do |filter|
 			case filter.type
 				when :title
 					filter_listing(filter, listing, listing.link_text)
@@ -51,7 +53,9 @@ def get_update
 	agent = Mechanize.new
 	agent.user_agent_alias = 'Linux Firefox'
 
-	page = agent.get('http://portland.craigslist.org/search/apa/mlt?zoomToPosting=&query=&srchType=A&minAsk=&maxAsk=1200&bedrooms=&addTwo=purrr')
+  # < 1200 + cats
+  url = 'http://portland.craigslist.org/search/apa/mlt?zoomToPosting=&query=&srchType=A&minAsk=&maxAsk=1200&bedrooms=&addTwo=purrr'
+  page = agent.get(url)
 	noko = Nokogiri.HTML(page.body)
 
 	puts noko.inspect

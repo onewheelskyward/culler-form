@@ -10,7 +10,7 @@
 
 # Use at least one worker per core if you're on a dedicated server,
 # more will usually help for _short_ waits on databases/caches.
-worker_processes 4
+worker_processes 1
 
 # Since Unicorn is never exposed to outside clients, it does not need to
 # run on the standard HTTP port (80), there is no reason to start Unicorn
@@ -26,7 +26,7 @@ worker_processes 4
 # listen on both a Unix domain socket and a TCP port,
 # we use a shorter backlog for quicker failover when busy
 listen "/tmp/fart-filter.sock", :backlog => 64
-listen 8080, :tcp_nopush => true
+#listen 8080, :tcp_nopush => true
 
 CAP_PATH = "/u/apps/fart-filter"
 APP_PATH = "#{CAP_PATH}/current"
