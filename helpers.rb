@@ -84,6 +84,6 @@ end
 def get_uri_prefix
 	#uri_prefix = request.url
 	#uri_prefix.gsub /\/[^\/]+$/, ""
-	uri_prefix = "http://pucksteak/fart-filter"
+	uri_prefix = "http://pucksteak/culler-form"
 end
 

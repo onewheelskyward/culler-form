@@ -1,5 +1,5 @@
-set :application, "fart-filter"
-set :repository,  "git@github.com:onewheelskyward/fart-filter"
+set :application, "culler-form"
+set :repository,  "git@github.com:onewheelskyward/culler-form"
 set :deploy_via,	:remote_cache
 set :normalize_asset_timestamps, false
 
@@ -16,7 +16,7 @@ namespace :fartfilter do
 		run "cd /u/apps/#{fetch(:application)}/current ; ~/.rbenv/shims/bundle install ; ~/.rbenv/bin/rbenv rehash"
 	end
 	task :unicorn_restart do
-		run "kill -s USR2 `cat /u/apps/fart-filter/shared/pids/unicorn.pid`"
+		run "kill -s USR2 `cat /u/apps/culler-form/shared/pids/unicorn.pid`"
 	end
 end
 # if you want to clean up old releases on each deploy uncomment this:
